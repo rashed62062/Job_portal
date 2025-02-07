@@ -1,10 +1,11 @@
-import { useParams, useLoaderData } from "react-router-dom";
+import { useParams, useLoaderData, useNavigate } from "react-router-dom";
 import { useContext, useState } from "react";
 
 import AuthContext from "../../context/AuthContext/AuthContext";
 import Swal from "sweetalert2";
 
 const JobApply = () => {
+    const navigate = useNavigate()
     const { id } = useParams(); // Get job ID from the URL
     const job = useLoaderData(); // Get job data from loader
     const { user } = useContext(AuthContext); // Get user from context
@@ -22,20 +23,20 @@ const JobApply = () => {
             linkedin: form.linkedin.value,
             github: form.github.value,
             resume: form.resume.value,
-            user: {
-                name: user?.displayName || "Anonymous", // Fallback if user is not available
-                email: user?.email || "No email provided", // Fallback for email
-            },
+            applicant_email: user?.email,
+           
         };
 
-        fetch('http://localhost:5000/job-applications', {
+        fetch('http://localhost:5000/jobs', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(applicationData),
         })
         .then((res) => res.text()) // Read the response as text first
         .then((text) => {
+
             try {
+                navigate('/myApplications')
                 return JSON.parse(text); // Parse JSON from text response
             } catch {
                 throw new Error('Invalid JSON response from server'); // Handle invalid JSON error
@@ -44,7 +45,9 @@ const JobApply = () => {
         .then((data) => {
             setLoading(false); // Set loading state to false
             if (data.insertedId) { // Check if application was successfully inserted
-                alert(data.insertedId)
+             
+                navigate('/myApplications')
+                // Show success message and redirect to the dashboard after 1.5 seconds
                 Swal.fire({
                     position: "top-end",
                     icon: "success",

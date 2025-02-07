@@ -68,6 +68,30 @@ async function run() {
   // });
   
 
+
+  //  get  all applications filtered by . emails filter
+  app.get('/job-application', async (req, res) => {
+    try {
+      const email = req.query.email;
+      const query = { applicant_email
+        : email };
+  
+      const result = await jobApplicationCollection.find(query).toArray();
+  
+      // Aggregate job details for each application
+      for (const application of result) {
+        const query1 = { _id: new ObjectId(application.job_id) };
+
+        
+      }
+  
+      res.send(result);
+    } catch (error) {
+      res.status(500).send({ error: "Failed to fetch applications" });
+    }
+  });
+
+
     // Default route
     app.get('/', (req, res) => {
       res.send('Jobs API is running');
