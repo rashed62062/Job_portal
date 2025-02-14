@@ -1,6 +1,5 @@
 const express = require('express');
 const cors = require('cors');
-
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
 
@@ -28,11 +27,12 @@ async function run() {
     await client.connect();
     console.log("Connected to MongoDB");
 
-    // Define collection
+    // Define collections
     const JobsCollection = client.db('usersDb').collection('jobs');
-    const jobApplicationCollection = client.db('usersDb').collection('job_application');
+    const ApplyJobCollection = client.db('usersDb').collection('job_application');
+    const AddJobsCollection = client.db('usersDb').collection('add_job_application');
 
-    // Jobs API
+    // Get all jobs
     app.get('/jobs', async (req, res) => {
       try {
         const results = await JobsCollection.find().toArray();
@@ -41,63 +41,93 @@ async function run() {
         res.status(500).send({ error: "Failed to fetch jobs" });
       }
     });
-//  job apply 
 
+    // Get job by ID
     app.get('/jobs/:id', async (req, res) => {
-       const id  = req.params.id;
-       const query = { _id : new ObjectId(id)}
-       const  results = await  JobsCollection.findOne(query)
-       res.send(results)
-    })
-    app.post('/job-applications', async (req, res) => {
-      const application = req.body;
-     
-      const results = jobApplicationCollection.insertOne(application)
-      
-       res.send(results)
-    })
-
-  //   app.get('/jobs', async (req, res) => {
-  //     try {
-  //         const limit = parseInt(req.query.limit) || 6; // Default limit is 3 if not provided
-  //         const results = await JobsCollection.find().limit(limit).toArray();
-  //         res.send(results);
-  //     } catch (error) {
-  //         res.status(500).send({ error: "Failed to fetch jobs" });
-  //     }
-  // });
-  
-
-
-  //  get  all applications filtered by . emails filter
-  app.get('/job-application', async (req, res) => {
-    try {
-      const email = req.query.email;
-      const query = { applicant_email
-        : email };
-  
-      const result = await jobApplicationCollection.find(query).toArray();
-  
-      // Aggregate job details for each application
-      for (const application of result) {
-        const query1 = { _id: new ObjectId(application.job_id) };
-
-        
+      try {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const result = await JobsCollection.findOne(query);
+        if (!result) {
+          return res.status(404).send({ error: "Job not found" });
+        }
+        res.send(result);
+      } catch (error) {
+        res.status(500).send({ error: "Invalid Job ID" });
       }
-  
-      res.send(result);
-    } catch (error) {
-      res.status(500).send({ error: "Failed to fetch applications" });
-    }
-  });
+    });
 
+    // Add a new job application
+    app.post("/job-applications", async (req, res) => {
+      try {
+        const result = await AddJobsCollection.insertOne(req.body);
+        if (result.insertedId) {
+          res.json({ insertedId: result.insertedId });
+        } else {
+          throw new Error("Job could not be added. Try again.");
+        }
+      } catch (error) {
+        console.error("Database Insert Error:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+      }
+    });
+
+    // Get jobs posted by a specific HR (filtered by email)
+    app.get('/addJobs', async (req, res) => {
+      try {
+        const email = req.query.email; // Use req.query instead of req.body
+        if (!email) {
+          return res.status(400).send({ error: "Email query parameter is required" });
+        }
+
+        // hr_email
+        const query = { hr_email: email }; // Ensure the field exists in DB
+        const result = await AddJobsCollection.find(query).toArray(); // Use find() instead of findOne()
+        res.send(result);
+      } catch (error) {
+        console.error("Error fetching HR jobs:", error);
+        res.status(500).send({ error: "Failed to fetch HR jobs" });
+      }
+    });
+
+    // Apply for a job
+    app.post("/jobs/apply", async (req, res) => {
+      try {
+        const result = await ApplyJobCollection.insertOne(req.body);
+        if (result.insertedId) {
+          res.json({ insertedId: result.insertedId });
+        } else {
+          throw new Error("Job application failed. Try again.");
+        }
+      } catch (error) {
+        console.error("Database Insert Error:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+      }
+    });
+
+    // Get job applications filtered by email
+    app.get('/job-application', async (req, res) => {
+      try {
+        const email = req.query.email;
+        if (!email) {
+          return res.status(400).send({ error: "Email query parameter is required" });
+        }
+
+        const query = { applicant_email: email }; // Ensure correct field name
+        const result = await ApplyJobCollection.find(query).toArray();
+        res.send(result);
+      } catch (error) {
+        console.error("Error fetching job applications:", error);
+        res.status(500).send({ error: "Failed to fetch applications" });
+      }
+    });
 
     // Default route
     app.get('/', (req, res) => {
       res.send('Jobs API is running');
     });
 
-    // Start the server only after successful DB connection
+    // Start the server
     app.listen(port, () => {
       console.log(`Server running on port ${port}`);
     });

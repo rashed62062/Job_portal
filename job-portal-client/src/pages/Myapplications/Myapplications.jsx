@@ -59,7 +59,7 @@ const Myapplications = () => {
             </td>
             <td>Purple</td>
             <th>
-              <button className="btn btn-ghost btn-xs">details</button>
+              <button className="btn btn-ghost btn-xs bg-blue-300 hover:bg-red-500">delete</button>
             </th>
           </tr>)
          }
