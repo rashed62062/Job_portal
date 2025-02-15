@@ -6,7 +6,7 @@ const MyPostedJobs = () => {
     const [jobs, setJobs] = useState([]);
 
     useEffect(() => {
-        fetch(`http://localhost:5000/addJobs?email=${user?.email}`)
+        fetch(`http://localhost:5000/jobs?email=${user?.email}`)
             .then((res) => res.json())
             .then((data) => setJobs(data)) // Store jobs in state
             .catch((error) => console.error("Error fetching jobs:", error));
@@ -34,6 +34,9 @@ const MyPostedJobs = () => {
                                 Deadline
                             </th>
                             <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-white uppercase tracking-wider bg-gradient-to-r from-blue-500 to-purple-600">
+                               Apply count
+                            </th>
+                            <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-white uppercase tracking-wider bg-gradient-to-r from-blue-500 to-purple-600">
                                 Action
                             </th>
                         </tr>
@@ -57,6 +60,10 @@ const MyPostedJobs = () => {
                                 </td>
                                 <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                                     <p className="text-gray-900 whitespace-no-wrap">{job.applicationDeadline}</p>
+                                </td>
+                                <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                    <p className="text-gray-900 whitespace-no-wrap">{job.
+applicationCount || 0 }</p>
                                 </td>
                                 <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                                     <button className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-red-500 to-pink-600 rounded-md hover:from-red-600 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition duration-150 ease-in-out">

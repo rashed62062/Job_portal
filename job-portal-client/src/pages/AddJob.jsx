@@ -21,7 +21,8 @@ const AddJob = () => {
         console.log(newJob); // Debugging
 
         try {
-            const response = await fetch('http://localhost:5000/job-applications', {
+
+            const response = await fetch('http://localhost:5000/jobs', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -112,10 +113,10 @@ const AddJob = () => {
                         <label className="label">
                             <span className="label-text">Salary Range</span>
                         </label>
-                        <input type="text" name="min" placeholder="Min" className="input input-bordered" required />
+                        <input type="number" name="min" placeholder="Min" className="input input-bordered" required />
                     </div>
                     <div className="form-control">
-                        <input type="text" name="max" placeholder="Max" className="input input-bordered" required />
+                        <input type="number" name="max" placeholder="Max" className="input input-bordered" required />
                     </div>
                     <div className="form-control">
                         <select name="currency" className="select select-bordered w-full" required>
